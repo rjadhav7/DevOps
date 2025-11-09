@@ -1,12 +1,13 @@
-##Linux essential areas for DevOps Engineer##
+#Linux essential areas for DevOps Engineer#
 
-**1. Process Management: Your Applications Under the Hood**
+##1. Process Management: Your Applications Under the Hood##
+
 
 When your application crashes, consumes too much CPU, or becomes unresponsive, you need to understand processes. Think of processes as individual workers in a factory — each doing a specific job.
 
 The Commands You’ll Actually Use
 
-*See what’s running:*
+**See what’s running:**
 ```
 # The holy trinity of process monitoring
 ps aux                    # Snapshot of all processes
@@ -55,6 +56,7 @@ ip link show              # Show network devices
 ifconfig                  # Shows interface configuration
 ```
 Real scenario: Your application can’t reach the database. First thing I check: ip addr show to ensure the network interface is up and has the right IP address.
+
 **Port Monitoring — The Detective Work**
 ```
 # Who’s using what port?
@@ -65,6 +67,7 @@ lsof -i :80               # What’s using port 80?
 lsof -i :3306             # Check if MySQL is running
 ```
 Example workflow: Application won’t start, claiming “port already in use.” Run lsof -i :8080 and discover another process is squatting on your port. Kill it or change your app’s port.
+
 **Network Troubleshooting Arsenal**
 ```
 # Is the server reachable?
@@ -77,6 +80,7 @@ dig google.com            # Detailed DNS lookup
 nslookup google.com       # Simple DNS check
 ```
 Production debugging story: API calls were timing out randomly. traceroute revealed packet loss at a specific router. Network team fixed the routing issue.
+
 **Firewall Management:**
 ```
 # Ubuntu/Debian firewall (UFW - User Friendly Firewall)
@@ -89,7 +93,9 @@ sudo ufw deny 8080        # Block specific port
 sudo iptables -L          # List all rules
 sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT  # Allow HTTPS
 ```
+
 ##3. File System Navigation##
+
 You’ll spend countless hours navigating server file systems. Efficiency here saves hours daily.
 
 **Navigation Mastery:**
@@ -102,6 +108,7 @@ cd ~                     # Go home
 cd -                     # Go to previous directory
 ```
 Pro workflow: I always start with pwd to know my location, then use ls -la to see what’s available.
+
 **File and Directory Operations**
 ```
 # Creating things
@@ -116,6 +123,7 @@ rm filename                         # Delete file
 rm -rf directory                    # Delete directory and contents (DANGEROUS!)
 ```
 Safety tip: Always use ls to verify what you’re about to delete. I’ve seen entire projects wiped because someone was in the wrong directory.
+
 **File Viewing Techniques**
 ```
 # Quick file inspection
@@ -156,6 +164,7 @@ chmod 600 private.key     # rw------- (private keys)
 chmod 777 file.txt        # rwxrwxrwx (AVOID THIS - security risk!)
 ```
 Production example: Deploy a script to production, but it won’t run. Check with ls -la script.sh and see it lacks execute permission. Fix with chmod +x script.sh.
+
 **Ownership Management**
 ```
 # Change file ownership
@@ -165,7 +174,9 @@ sudo chown :docker script.sh        # Change only group
 # Recursive ownership changes
 sudo chown -R nginx:nginx /var/www/html   # Change entire directory tree
 ```
+
 ##5. File System Usage: Avoiding the Disk Space Disaster##
+
 Running out of disk space crashes applications. Monitoring disk usage prevents 90% of storage-related incidents.
 
 **Disk Space Monitoring**

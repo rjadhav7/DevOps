@@ -1,7 +1,11 @@
-##Linux essential areas for DevOps Engineer
+##Linux essential areas for DevOps Engineer##
+
 **1. Process Management: Your Applications Under the Hood**
+
 When your application crashes, consumes too much CPU, or becomes unresponsive, you need to understand processes. Think of processes as individual workers in a factory — each doing a specific job.
+
 The Commands You’ll Actually Use
+
 *See what’s running:*
 ```
 # The holy trinity of process monitoring
@@ -11,9 +15,10 @@ htop                      # Enhanced version (install it everywhere)
 ```
 When I run ps aux on a production server, I’m looking for:
 
-> High CPU usage processes (%CPU column)
-> Memory hogs (%MEM column)
-> Processes that shouldn’t be running
+- High CPU usage processes (%CPU column)
+- Memory hogs (%MEM column)
+- Processes that shouldn’t be running.
+  
 Example scenario: Your web server is slow. Run top and you see a rogue process eating 90% CPU. Now you know exactly what to kill.
 
 **Kill misbehaving processes:**
@@ -28,6 +33,7 @@ kill -9 1234
 killall nginx
 ```
 Pro tip: Always try kill before kill -9. The gentle kill allows the process to clean up properly.
+
 *Process Hierarchy Matters*
 ```
 # See the family tree of processes
@@ -37,6 +43,7 @@ pstree -p                 # Include process IDs
 This shows you parent-child relationships. Kill a parent process, and its children die too. Essential for understanding how applications spawn sub-processes.
 
 **2. Networking: How Your Services Talk**
+
 In a microservices world, everything is connected. Applications talk to databases, APIs call other APIs, load balancers distribute traffic. When networking breaks, everything breaks.
 
 **Network Interface Management**

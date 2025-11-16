@@ -1,0 +1,142 @@
+##1. How do you securely authenticate your cloud with Terraform?##
+
+You should avoid hardcoding credentials inside .tf files. Instead:
+
+Use environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+Use shared AWS credentials files (~/.aws/credentials)
+Leverage IAM roles with temporary STS tokens (most secure)
+Use Terraform Cloud/Workspaces to store credentials securely as environment variables.
+2. How do you store secrets in Terraform?
+Use Terraform variables with sensitive = true
+Pass secrets using .tfvars files (never commit them to Git)
+Use environment variables (TF_VAR_db_password)
+For production, integrate HashiCorp Vault, AWS Secrets Manager, or SSM Parameter Store to dynamically fetch secrets.
+3. What is a backend in Terraform? Why do we use it?
+A backend determines where Terraform state is stored. By default, state is stored locally, but using a remote backend (like S3, Terraform Cloud, Consul) allows:
+
+Collaboration — multiple team members share the same state
+Locking — prevent concurrent runs
+Security — encryption at rest
+4. If you have existing infrastructure in an AWS account, how do you replicate it into your Terraform state?
+Use terraform import to bring existing resources into state:
+
+terraform import aws_instance.example i-1234567890abcdef
+Then run terraform plan to generate matching configuration files (manual cleanup might be required).
+
+5. If you lose a .pem key, how can you connect to your server?
+Approaches:
+
+Create a new key pair in AWS, then manually replace the public key in ~/.ssh/authorized_keys via Systems Manager Session Manager.
+Use EC2 Instance Connect (browser-based SSH)
+If EBS root volume is critical, detach and attach to another instance, modify keys, reattach.
+6. In a CI/CD pipeline, if build artifacts are stored in one S3 bucket and deployment happens to another S3 bucket in a different AWS account, how do you establish the connection?
+Set up a bucket policy in the destination bucket allowing cross-account access.
+Use IAM role assumption (sts:AssumeRole) in the pipeline to get temporary credentials for the target account.
+Use these credentials to upload artifacts securely.
+7. What is VPC Peering and Transit Gateway?
+VPC Peering — One-to-one connection between two VPCs.
+Transit Gateway — Hub-and-spoke architecture that allows many VPCs and on-prem networks to connect to a central gateway, reducing peering complexity.
+8. What are the common issues you have faced while using CloudFront?
+Caching issues (stale content) — solved with cache invalidations.
+SSL certificate mismatch
+Wrong origin configuration — causing 403/404 errors.
+Propagation delay for distribution updates.
+9. Types of Load Balancers in AWS — when do you use each?
+ALB (Application Load Balancer) — Layer 7, HTTP/HTTPS, good for microservices & path-based routing.
+NLB (Network Load Balancer) — Layer 4, extremely fast, use for TCP/UDP and static IP.
+CLB (Classic Load Balancer) — Legacy, rarely used for new workloads.
+Docker & Container Questions
+10. Difference between CMD and ENTRYPOINT in Docker?
+CMD — Provides default arguments that can be overridden at runtime.
+ENTRYPOINT — Defines the main executable; arguments passed via docker run are appended.
+Best practice: Use ENTRYPOINT for main command, CMD for default parameters.
+
+11. Write a basic Dockerfile for a Node.js application
+```
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --production
+COPY . .
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+12. Difference between COPY and ADD in Docker?
+COPY — Only copies files/directories.
+ADD — Copies files and supports URLs and automatic extraction of tar archives. (Use COPY for clarity unless ADD’s extra features are needed.)
+13. Difference between a Multistage Dockerfile and a Distroless Dockerfile?
+Multistage Dockerfile — Uses multiple FROM statements to create smaller, optimized images.
+Distroless Dockerfile — Uses minimal base image (no shell, no package manager), reducing attack surface.
+14. Write a Multistage Dockerfile for Node.js
+# Stage 1: Build
+FROM node:18 AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Stage 2: Run
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY package*.json ./
+RUN npm install --production
+EXPOSE 3000
+CMD ["node", "dist/server.js"]
+Jenkins, Kubernetes & Shell Scripting Questions (L2 Hands-On)
+15. Explain how Kubernetes Architecture works
+Master Components: API Server, Controller Manager, Scheduler, etcd.
+Worker Nodes: kubelet, kube-proxy, container runtime.
+Control plane schedules pods, worker nodes run them.
+16. Difference between Deployment and StatefulSet in Kubernetes
+Deployment — For stateless apps, replicas are interchangeable, e.g., webservers.
+StatefulSet — For stateful apps, pods get sticky identities, ordered deployment, and persistent storage, e.g., database.
+17. Write a Kubernetes Deployment YAML file
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app
+          image: my-app:latest
+          ports:
+            - containerPort: 3000
+18. Write a Jenkins Declarative Pipeline with a post section
+pipeline {
+  agent any
+  stages {
+    stage('Build') {
+      steps {
+        sh 'npm install'
+      }
+    }
+  }
+  post {
+    success {
+      echo 'Build completed successfully.'
+    }
+    failure {
+      echo 'Build failed!'
+    }
+  }
+}
+19. How to check Jenkins version?
+UI: Go to Manage Jenkins → System Information
+CLI: Run java -jar jenkins-cli.jar -s http://<jenkins_url> version
+20. Write a shell script to find the largest file in a directory.
+#!/bin/bash
+dir=$1
+find "$dir" -type f -exec du -h {} + | sort -rh | head -n 1
+Conclusion
+These questions give you a strong foundation for DevOps interviews and day-to-day problem solving. If you found this helpful, share it with your peers — and feel free to add your own tricky questions in the comments section!
